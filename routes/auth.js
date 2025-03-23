@@ -5,14 +5,12 @@ const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
 const { validateUser } = require("../middleware/Validation");
-console.log("Email User:", process.env.EMAIL_USER);
-console.log("Email Pass:", process.env.EMAIL_PASS);
 const transporter = nodemailer.createTransport({
   host: "sandbox.smtp.mailtrap.io",
   port: 2525,
   auth: {
-    user: "4388cd3c1af573",
-    pass: "783bf1a96f4b83",
+    user: process.env.USER,
+    pass: process.env.PASS,
   },
 });
 const secretKey = "p9c025YrTAcDeKWX277O1ihxSYjOQfNS";
@@ -54,7 +52,7 @@ router.post("/login", async (req, res) => {
     }
 
     const secretKey = "p9c025YrTAcDeKWX277O1ihxSYjOQfNS";
-    const token = jwt.sign({ userId: user._id, role: user.role }, secretKey, {
+    const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
     res.json({ message: "Login successful", token, user: user });
@@ -97,7 +95,7 @@ router.post("/register", async (req, res) => {
 
     const token = jwt.sign(
       { userId: newUser._id, role: newUser.role },
-      secretKey,
+      process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
@@ -130,7 +128,7 @@ router.post("/register", async (req, res) => {
 router.get("/verify-email/:token", async (req, res) => {
   try {
     const { token } = req.params;
-    const decoded = jwt.verify(token, secretKey);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const user = await User.findById(decoded.userId);
     if (!user) {
